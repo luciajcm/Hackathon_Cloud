@@ -1,40 +1,36 @@
-import { useEffect, useContext, useState } from "react";
-import { connectWebSocket } from "../websocket/ws";
+import { useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { connectWebSocket } from "../websocket/ws";
 
 export default function AdminReportsPage() {
   const { user } = useContext(AuthContext);
-  const [updates, setUpdates] = useState([]);
 
   useEffect(() => {
     if (!user) return;
 
-    const ws = connectWebSocket(user.role, user.id, (msg) => {
-      console.log("📩 WS Mensaje recibido:", msg);
+    const ws = connectWebSocket(
+      user.role,
+      user.id,
+      (msg) => {
+        console.log("Mensaje recibido:", msg);
 
-      if (msg.type === "report_update") {
-        setUpdates((prev) => [msg.payload, ...prev]); // lo agregamos a la lista
+        if (msg.type === "report_update") {
+          alert("Nuevo cambio en reporte");
+        }
       }
-    });
+    );
 
-    return () => ws.close();
+    // ⬅ IMPORTANTE: Cerrar al salir del componente
+    return () => {
+      console.log("Cerrando WebSocket desde el frontend…");
+      ws.close(); // ← Esto activa automáticamente tu $disconnect Lambda
+    };
   }, [user]);
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>Panel del Administrador</h1>
-      <h2>Actualizaciones en tiempo real de reportes</h2>
-
-      {updates.length === 0 && <p>No hay notificaciones todavía...</p>}
-
-      {updates.map((r, i) => (
-        <div key={i} style={{ padding: "10px", border: "1px solid #ccc", marginTop: "10px" }}>
-          <strong>Reporte ID:</strong> {r.reporte_id} <br />
-          <strong>Estado:</strong> {r.estado} <br />
-          <strong>Tipo:</strong> {r.tipo} <br />
-          <strong>Descripción:</strong> {r.descripcion}
-        </div>
-      ))}
+      <h1>Panel Administrador</h1>
+      <p>WebSocket escuchando cambios...</p>
     </div>
   );
 }
