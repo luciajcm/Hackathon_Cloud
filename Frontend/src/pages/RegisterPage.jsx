@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { register } from "../api/auth";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -8,42 +9,30 @@ export default function RegisterPage() {
     numero_telefonico: ""
   });
 
-  const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
+  function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  }
 
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
-    setLoading(true);
     setMsg("");
+    setLoading(true);
 
     try {
-      const res = await fetch("https://TU-API.execute-api.us-east-1.amazonaws.com/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      const data = await res.json();
-
-      if (res.status === 201) {
-        setMsg("Registro exitoso. Ya puedes iniciar sesión.");
-      } else {
-        setMsg(data.error || "Error en el registro.");
-      }
-
+      await register(form);
+      setMsg("Registro exitoso. Ahora puedes iniciar sesión.");
     } catch (err) {
-      setMsg("Error al conectar con el servidor.");
+      setMsg(err.message || "Error en el registro.");
     }
 
     setLoading(false);
-  };
+  }
 
   return (
-    <div style={{ padding: "40px", maxWidth: "400px", margin: "auto" }}>
+    <div style={{ padding: 40, maxWidth: 400, margin: "auto" }}>
       <h2>Crear Cuenta</h2>
 
       <form onSubmit={handleSubmit}>
@@ -88,10 +77,9 @@ export default function RegisterPage() {
         <button type="submit" disabled={loading}>
           {loading ? "Registrando..." : "Registrarme"}
         </button>
-
       </form>
 
-      {msg && <p style={{ marginTop: "10px" }}>{msg}</p>}
+      {msg && <p style={{ marginTop: 15 }}>{msg}</p>}
     </div>
   );
 }

@@ -1,41 +1,23 @@
 import { createContext, useState, useEffect } from "react";
-import { jwtDecode } from "jwt-decode";
-import { apiFetch } from "../api/api";
+import { getMe } from "../api/users";
 
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(localStorage.getItem("token"));
   const [user, setUser] = useState(null);
-  const [role, setRole] = useState(null);
 
   useEffect(() => {
-    if (token) {
+    async function loadUser() {
       try {
-        const decoded = jwtDecode(token);
-        setRole(decoded.role);
-        setUser(decoded);
-      } catch (err) {
-        console.error("Invalid token");
-        logout();
-      }
+        const me = await getMe();
+        setUser(me);
+      } catch {}
     }
-  }, [token]);
-
-  function login(token) {
-    localStorage.setItem("token", token);
-    setToken(token);
-  }
-
-  function logout() {
-    localStorage.removeItem("token");
-    setToken(null);
-    setUser(null);
-    setRole(null);
-  }
+    loadUser();
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ token, user, role, login, logout }}>
+    <AuthContext.Provider value={{ user, setUser }}>
       {children}
     </AuthContext.Provider>
   );

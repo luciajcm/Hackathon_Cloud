@@ -1,24 +1,32 @@
 import { useEffect, useState } from "react";
-import { apiFetch } from "../api/api";
+import { getMe } from "../api/users"; // <- correcto
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    async function load() {
-      const res = await apiFetch("/users/me");
-      setProfile(res);
-    }
     load();
   }, []);
 
-  if (!profile) return <p>Cargando...</p>;
+  async function load() {
+    try {
+      const u = await getMe();
+      setUser(u);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  if (!user) return <p>Cargando...</p>;
 
   return (
-    <div>
+    <div style={{ padding: 40 }}>
       <h1>Mi Perfil</h1>
-      <p><b>Nombre:</b> {profile.nombre}</p>
-      <p><b>Correo:</b> {profile.correo}</p>
+      <p><strong>Nombre:</strong> {user.nombre}</p>
+      <p><strong>Correo:</strong> {user.correo}</p>
+      <p><strong>Rol:</strong> {user.rol}</p>
+
+      <a href="/profile/edit">Editar perfil</a>
     </div>
   );
 }
